@@ -1,0 +1,8 @@
+{
+  "folder": "English",
+  "description": "Từ vựng Tiếng Anh",
+  "files": [
+    { "name": "IELTS_Academic.xlsx", "label": "IELTS Academic", "desc": "500 từ học thuật · cấp độ cao", "path": "English/IELTS_Academic.xlsx" },
+    { "name": "TOEIC_600.xlsx",      "label": "TOEIC 600",      "desc": "600 từ thông dụng · cấp độ B1-B2", "path": "English/TOEIC_600.xlsx" }
+  ]
+}

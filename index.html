@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Học Từ Vựng Song Ngữ</title>
+<style>
+  :root{
+    --bg:#0f1220;--card:#1a1f38;--card2:#232a4d;--accent:#ff7a59;
+    --accent2:#4dd0e1;--text:#eef1ff;--muted:#9aa3c7;--line:#2c3358;--good:#5cd68a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"Segoe UI",-apple-system,sans-serif;
+    background:radial-gradient(1200px 600px at 20% -10%,#26305e 0%,var(--bg) 55%);
+    color:var(--text);min-height:100vh;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:40px 20px;
+  }
+  h1{font-size:36px;text-align:center;margin-bottom:8px;letter-spacing:.5px}
+  h1 .hl{color:var(--accent)}
+  .sub{color:var(--muted);font-size:16px;text-align:center;margin-bottom:42px}
+  .cards{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;max-width:820px}
+
+  .card{
+    background:linear-gradient(160deg,var(--card),var(--card2));
+    border:1px solid var(--line);border-radius:22px;padding:36px 30px 28px;
+    width:350px;text-decoration:none;color:var(--text);transition:.2s;text-align:center;
+    display:flex;flex-direction:column;align-items:center;
+  }
+  .card:hover{transform:translateY(-7px);border-color:var(--accent2);
+    box-shadow:0 20px 50px rgba(0,0,0,.45)}
+  .flag{font-size:62px;margin-bottom:16px}
+  .card h2{font-size:23px;margin-bottom:8px}
+  .card p{color:var(--muted);font-size:13.5px;line-height:1.65;flex:1}
+
+  /* mini file list preview */
+  .fpreview{margin:16px 0 0;width:100%;text-align:left}
+  .fpreview-title{font-size:11px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.8px;margin-bottom:8px}
+  .fpreview-list{display:flex;flex-direction:column;gap:6px}
+  .fpi{background:var(--bg);border:1px solid var(--line);border-radius:9px;
+    padding:7px 12px;font-size:12.5px;display:flex;align-items:center;gap:8px}
+  .fpi span{color:var(--muted)}
+  .fpi-loading{color:var(--muted);font-size:12.5px;padding:4px 0}
+
+  .go{display:inline-block;margin-top:20px;background:var(--accent);color:#1a1020;
+    font-weight:700;padding:12px 28px;border-radius:12px;font-size:15px;transition:.15s}
+  .card:hover .go{box-shadow:0 8px 24px rgba(255,122,89,.4)}
+
+  footer{margin-top:50px;color:var(--muted);font-size:13px;text-align:center;line-height:1.8}
+  footer a{color:var(--accent2);text-decoration:none}
+</style>
+</head>
+<body>
+  <h1>📚 Học Từ Vựng <span class="hl">Song Ngữ</span></h1>
+  <div class="sub">Chọn khóa học · Nạp bộ từ vựng có sẵn hoặc tải file Excel của bạn</div>
+
+  <div class="cards">
+    <!-- TIẾNG TRUNG -->
+    <a class="card" href="hoc-tu-vung-trung-viet.html">
+      <div class="flag">🇨🇳</div>
+      <h2>Tiếng Trung – Việt</h2>
+      <p>Học từ vựng tiếng Trung với flashcard 3D, nghe giọng đọc chuẩn, câu ví dụ và luyện viết chữ Hán.</p>
+      <div class="fpreview">
+        <div class="fpreview-title">📂 Bộ từ vựng có sẵn</div>
+        <div class="fpreview-list" id="cnList">
+          <div class="fpi-loading">⏳ Đang tải...</div>
+        </div>
+      </div>
+      <span class="go">Bắt đầu học →</span>
+    </a>
+
+    <!-- TIẾNG ANH -->
+    <a class="card" href="hoc-tu-vung-anh-viet.html">
+      <div class="flag">🇬🇧</div>
+      <h2>Tiếng Anh – Việt</h2>
+      <p>Học từ vựng tiếng Anh với flashcard 3D, phát âm chuẩn, câu ví dụ và luyện viết từ.</p>
+      <div class="fpreview">
+        <div class="fpreview-title">📂 Bộ từ vựng có sẵn</div>
+        <div class="fpreview-list" id="enList">
+          <div class="fpi-loading">⏳ Đang tải...</div>
+        </div>
+      </div>
+      <span class="go">Bắt đầu học →</span>
+    </a>
+  </div>
+
+  <footer>
+    ✦ Tạo Bởi Kilo — Chúc học tốt! · Good luck!<br>
+    <small>Kéo thả hoặc chọn file Excel của bạn trực tiếp trong từng trang</small>
+  </footer>
+
+<script>
+async function loadPreview(manifestUrl, listId){
+  const el = document.getElementById(listId);
+  try {
+    const res = await fetch(manifestUrl + '?_=' + Date.now());
+    if(!res.ok) throw new Error('');
+    const data = await res.json();
+    const files = data.files || [];
+    if(!files.length){ el.innerHTML='<div class="fpi-loading">📭 Chưa có file</div>'; return; }
+    el.innerHTML = files.map(f=>`
+      <div class="fpi">📗 <b>${f.label||f.name}</b><span>${f.desc||''}</span></div>
+    `).join('');
+  } catch(e){
+    el.innerHTML='<div class="fpi-loading">—</div>';
+  }
+}
+loadPreview('China/manifest.json',   'cnList');
+loadPreview('English/manifest.json', 'enList');
+</script>
+</body>
+</html>
