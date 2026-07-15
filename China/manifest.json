@@ -2,6 +2,7 @@
   "folder": "China",
   "description": "Từ vựng Tiếng Trung",
   "files": [
-    { "name": "HSK4.xlsx", "label": "HSK 4 — Từ vựng cấp 4", "desc": "983 từ · cấp độ trung cấp", "path": "China/HSK4.xlsx" }
+    { "name": "HSK4.xlsx", "label": "HSK 4 — Từ vựng cấp 4", "desc": "983 từ · cấp độ trung cấp", "path": "China/HSK4.xlsx" },
+	{ "name": "Tieng_Trung_Cong_Xuong.xlsx", "label": "Từ vựng công xưởng", "desc": "204 từ · cấp độ trung cấp", "path": "China/Tieng_Trung_Cong_Xuong.xlsx" }
   ]
 }
