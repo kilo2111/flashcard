@@ -328,7 +328,8 @@
       <button class="navbtn" id="fPlay" title="Tự động chạy qua tất cả các từ">▶️</button>
       <button class="navbtn" id="fShuffle" title="Xáo trộn">🔀</button>
       <button class="navbtn" id="fStarOnly" title="Chỉ học từ đã đánh dấu">⭐</button>
-      <button class="navbtn" id="fFlipSide" title="Đổi mặt trước: Trung ⇄ Việt">🔄</button>
+      <button class="navbtn" id="fFlipSide" title="Đổi mặt trước: Anh ⇄ Việt">🔄</button>
+      <button class="navbtn" id="fAutoEx" title="Tự động đọc ví dụ sau khi đọc từ">📢</button>
     </div>
     <div class="typebox">
       <label class="typelabel" id="typeLabel">✍️ Gõ lại từ tiếng Anh đang hiển thị:</label>
@@ -780,12 +781,14 @@ document.getElementById('flash').addEventListener('click',e=>{
   const flash=document.getElementById('flash');
   const opening=!flash.classList.contains('flip');
   flash.classList.toggle('flip');
-  if(opening){ const i=curFlashIdx(); if(i>=0) speak(DATA[i].h,document.getElementById('fspk')); }
+  if(opening){ const i=curFlashIdx(); if(i>=0){ speak(DATA[i].h,document.getElementById('fspk')); scheduleReadEx(i); } }
 });
 // nút loa từ chính (cả 2 mặt)
 ['fspk','fspk2'].forEach(id=>{
   document.getElementById(id).addEventListener('click',e=>{
-    e.stopPropagation(); const i=curFlashIdx(); if(i>=0) speak(DATA[i].h,e.currentTarget);
+    e.stopPropagation();
+    const i=curFlashIdx();
+    if(i>=0){ speak(DATA[i].h,e.currentTarget); scheduleReadEx(i); }
   });
 });
 // nút loa câu ví dụ trên thẻ lớn
@@ -881,12 +884,17 @@ function runStep(){
   renderFlash();
 
   // Bước 1: hiện tiếng Anh trong t1 giây
-  autoTimer=setTimeout(()=>{
+  autoTimer=setTimeout(async ()=>{
     if(!autoRunning) return;
-    // Bước 2: lật thẻ + tự đọc
+    // Bước 2: lật thẻ + tự đọc từ (+ tự đọc ví dụ nếu bật), chờ đọc xong hẳn mới sang bước 3
     flash.classList.add('flip');
     const i=curFlashIdx();
-    if(i>=0) speak(DATA[i].h,document.getElementById('fspk'));
+    if(i>=0){
+      await speak(DATA[i].h,document.getElementById('fspk'));
+      if(!autoRunning) return; // người dùng có thể đã bấm dừng trong lúc đang đọc
+      await scheduleReadEx(i);
+      if(!autoRunning) return;
+    }
     // Bước 3: giữ thẻ t2 giây rồi sang từ khác
     autoTimer=setTimeout(()=>{
       if(!autoRunning) return;
@@ -917,11 +925,36 @@ document.getElementById('fStarOnly').onclick=function(){
   renderFlash();
 };
 
-/* ===== NÚT ĐẢO CHIỀU: mặt trước Trung ⇄ Việt ===== */
+/* ===== TỰ ĐỘNG ĐỌC VÍ DỤ SAU KHI ĐỌC TỪ ===== */
+let autoReadEx = false;
+let autoExTimer = null;
+
+document.getElementById('fAutoEx').onclick = function(){
+  autoReadEx = !autoReadEx;
+  this.classList.toggle('active', autoReadEx);
+  this.title = autoReadEx
+    ? 'Đang bật: tự đọc ví dụ sau từ vựng (bấm để tắt)'
+    : 'Tự động đọc ví dụ sau khi đọc từ';
+};
+
+function scheduleReadEx(idx){
+  if(!autoReadEx) return Promise.resolve();
+  if(autoExTimer){ clearTimeout(autoExTimer); autoExTimer=null; }
+  const d = DATA[idx];
+  if(!d || !d.ex) return Promise.resolve();
+  return new Promise(resolve=>{
+    autoExTimer = setTimeout(()=>{
+      const btn = document.getElementById('fExSpk');
+      speak(d.ex, btn).then(resolve);
+    }, 1000);
+  });
+}
+
+/* ===== NÚT ĐẢO CHIỀU: mặt trước Anh ⇄ Việt ===== */
 document.getElementById('fFlipSide').onclick=function(){
   reverseSide=!reverseSide;
   this.classList.toggle('active',reverseSide);
-  this.title=reverseSide?'Mặt trước: Tiếng Việt (bấm để về Trung)':'Đổi mặt trước: Trung ⇄ Việt';
+  this.title=reverseSide?'Mặt trước: Tiếng Việt (bấm để về Anh)':'Đổi mặt trước: Anh ⇄ Việt';
   renderFlash();
 };
 
@@ -1001,7 +1034,7 @@ if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged=pi
 function speak(text,btn){
   if(!('speechSynthesis' in window)){
     alert('Trình duyệt này không hỗ trợ đọc giọng nói. Hãy dùng Microsoft Edge hoặc Chrome nhé.');
-    return;
+    return Promise.resolve();
   }
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text);
@@ -1009,9 +1042,11 @@ function speak(text,btn){
   if(btn){
     document.querySelectorAll('.speaker.playing').forEach(b=>b.classList.remove('playing'));
     btn.classList.add('playing');
-    u.onend=u.onerror=()=>btn.classList.remove('playing');
   }
-  speechSynthesis.speak(u);
+  return new Promise(resolve=>{
+    u.onend=u.onerror=()=>{ if(btn) btn.classList.remove('playing'); resolve(); };
+    speechSynthesis.speak(u);
+  });
 }
 
 let allRunning=false, allTimer=null;
